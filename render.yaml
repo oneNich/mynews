@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mynews-api
+    runtime: python311
+    rootDir: backend
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        scope: all
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        scope: all
+        sync: false
+      - key: ADMIN_TOKEN
+        scope: all
+        sync: false
