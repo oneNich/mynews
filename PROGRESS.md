@@ -8,6 +8,6 @@ P2 - Backend skeleton (not started)
 ## Known issues
 - none
 ## Deployed URLs
-- API: (not deployed yet)
+- API: https://mynews-fdgy.onrender.com/
 ## Next step
 P2
