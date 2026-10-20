@@ -1,8 +1,9 @@
 import os
+from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import JSONResponse
 from db import engine, SessionLocal
-from models import Base
+from models import Base, Article, Story
 from worker import main as run_job
 
 app = FastAPI()
@@ -20,7 +21,25 @@ def health():
 
 @app.get("/stories")
 def get_stories():
-    return []
+    db = SessionLocal()
+    try:
+        now = datetime.now(timezone.utc)
+        cutoff_time = now - timedelta(hours=168)
+
+        # Get articles and stories published in the last 168 hours
+        articles = db.query(Article).filter(
+            Article.published_at >= cutoff_time
+        ).all()
+
+        stories = db.query(Story).filter(
+            Story.id.in_(db.query(Article.story_id).filter(
+                Article.published_at >= cutoff_time
+            ).distinct())
+        ).all() if articles else []
+
+        return {"stories": stories, "articles": articles}
+    finally:
+        db.close()
 
 
 @app.post("/admin/collect")
