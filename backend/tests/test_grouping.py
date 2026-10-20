@@ -185,3 +185,40 @@ def test_story_headline_updated_to_most_recent(db):
 
     story = db.query(Story).first()
     assert story.headline == "Newer Article Title"
+
+
+def test_both_unassigned_articles_group_together(db):
+    """Test that two unassigned articles from different publishers group together."""
+    now = datetime.now(timezone.utc)
+
+    article1 = Article(
+        url="https://foxnews.com/article1",
+        url_norm="https://foxnews.com/article1",
+        publisher="Fox News",
+        title="Congress votes on Ukraine aid package",
+        summary_text="Congress passed a comprehensive aid package for Ukraine with bipartisan support. House and Senate voted to approve military assistance.",
+        published_at=now - timedelta(hours=2),
+    )
+    article2 = Article(
+        url="https://npr.com/article1",
+        url_norm="https://npr.com/article1",
+        publisher="NPR",
+        title="Congress approves Ukraine military assistance bill",
+        summary_text="Both the House and Senate passed a funding bill supporting Ukraine's defense. Congress allocated resources to Ukraine.",
+        published_at=now - timedelta(hours=4),
+    )
+    db.add(article1)
+    db.add(article2)
+    db.commit()
+
+    assert article1.story_id is None
+    assert article2.story_id is None
+
+    group_articles(db)
+
+    article1_after = db.query(Article).filter(Article.id == article1.id).first()
+    article2_after = db.query(Article).filter(Article.id == article2.id).first()
+
+    assert article1_after.story_id is not None
+    assert article2_after.story_id is not None
+    assert article1_after.story_id == article2_after.story_id

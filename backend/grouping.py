@@ -5,8 +5,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from models import Article, Story
 import re
 
-SIMILARITY_THRESHOLD = 0.30
-TIME_WINDOW_HOURS = 48
+SIMILARITY_THRESHOLD = 0.40
+TIME_WINDOW_HOURS = 168
 
 def extract_capitalized_terms(text):
     """Extract capitalized non-stopword terms (likely names/places)."""
@@ -29,7 +29,6 @@ def find_best_matching_article(article, db: Session):
     cutoff = datetime.now(timezone.utc) - timedelta(days=7)
     candidates = db.query(Article).filter(
         Article.id != article.id,
-        Article.story_id.isnot(None),
         Article.published_at >= cutoff,
     ).all()
 
@@ -69,14 +68,22 @@ def group_articles(db: Session):
         "stories_joined": 0,
     }
 
-    ungrouped = db.query(Article).filter(Article.story_id.is_(None)).all()
+    ungrouped = db.query(Article).filter(Article.story_id.is_(None)).order_by(Article.published_at).all()
 
     for article in ungrouped:
         matching_article = find_best_matching_article(article, db)
 
         if matching_article:
-            article.story_id = matching_article.story_id
-            stats["stories_joined"] += 1
+            if matching_article.story_id:
+                article.story_id = matching_article.story_id
+                stats["stories_joined"] += 1
+            else:
+                new_story = Story(headline=article.title)
+                db.add(new_story)
+                db.flush()
+                article.story_id = new_story.id
+                matching_article.story_id = new_story.id
+                stats["stories_created"] += 1
         else:
             new_story = Story(headline=article.title)
             db.add(new_story)
