@@ -5,7 +5,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from models import Article, Story
 import re
 
-SIMILARITY_THRESHOLD = 0.40
+SIMILARITY_THRESHOLD_SAME_PUBLISHER = 0.60
+SIMILARITY_THRESHOLD_CROSS_PUBLISHER = 0.40
 TIME_WINDOW_HOURS = 168
 
 def extract_capitalized_terms(text):
@@ -49,7 +50,9 @@ def find_best_matching_article(article, db: Session):
         best_score = similarities[best_idx]
         best_candidate = candidates[best_idx]
 
-        if best_score >= SIMILARITY_THRESHOLD:
+        threshold = SIMILARITY_THRESHOLD_SAME_PUBLISHER if article.publisher == best_candidate.publisher else SIMILARITY_THRESHOLD_CROSS_PUBLISHER
+
+        if best_score >= threshold:
             time_diff = abs((article.published_at - best_candidate.published_at).total_seconds() / 3600)
             if time_diff <= TIME_WINDOW_HOURS:
                 shared_terms = get_shared_capitalized_terms(article_text,

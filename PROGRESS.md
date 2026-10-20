@@ -5,14 +5,16 @@ P7 (next step TBD)
 - P1 Spec file (tag p1-done)
 - P5 Retention and cleanup (tag p5-done)
 - P6 Story grouping - fixed (tag p6-done)
+- P6 fix 2 - false merges (tag p6-fix2-done)
 ## Decisions made
 - Articles and stories are filtered by published_at >= now - 168h in API queries
 - Retention runs at the end of every worker.py run and deletes expired articles, orphaned stories, and their related records
 - Summary status is set to 'pending' when a story loses an article but retains others
-- Story grouping: process unassigned articles oldest first; compare each against ALL articles (both assigned and unassigned) in the 7-day window; if best match has a story, join it; otherwise create a new story for both; similarity threshold 0.40 (was 0.30 causing false positives)
+- Story grouping: process unassigned articles oldest first; compare each against ALL articles (both assigned and unassigned) in the 7-day window; if best match has a story, join it; otherwise create a new story for both; similarity threshold 0.40 for cross-publisher, 0.60 for same-publisher (was 0.40 for all, causing false same-publisher merges)
 - Grouping algorithm now correctly handles two unassigned articles matching each other and grouping into the same story
 - Conservative thresholds prevent false positives; single-source stories are created when no match found
 - URL normalization includes lowercasing path to handle duplicate detection correctly
+- Same-publisher matches require 2+ shared capitalized terms AND similarity >= 0.60 (prevents false merges like LeBron helicopter vs Carmelo stories)
 ## Known issues
 - "Test" publisher articles only used in test data (in-memory databases), no production risk, but regroup.py deletes any if they exist
   - Found in backend/tests/test_ingest.py:132,143 and backend/tests/test_retention.py:30,37,67,107,148,156,196,220 (all test functions with in-memory SQLite)

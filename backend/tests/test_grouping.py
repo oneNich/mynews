@@ -166,7 +166,7 @@ def test_story_headline_updated_to_most_recent(db):
         url_norm="https://example.com/article1",
         publisher="Example",
         title="Older Article Title",
-        summary_text="Congress and Senate vote on Ukraine aid package supporting Ukrainian defense efforts. Both chambers passed Ukraine assistance.",
+        summary_text="Congress and Senate vote on Ukraine aid package with overwhelming bipartisan support. Both chambers strongly passed Ukraine military assistance legislation. Congress approved substantial Ukraine defense funding. Senate voted for Ukraine support package.",
         published_at=now - timedelta(hours=5),
     )
     article2 = Article(
@@ -174,7 +174,7 @@ def test_story_headline_updated_to_most_recent(db):
         url_norm="https://example.com/article2",
         publisher="Example",
         title="Newer Article Title",
-        summary_text="Congress and Senate pass Ukraine military aid bill supporting defense against Russian forces. Ukraine assistance approved.",
+        summary_text="Congress and Senate pass Ukraine military aid bill with strong bipartisan support. Both chambers passed Ukraine defense assistance. Congress approved substantial Ukraine military funding. Senate voted to support Ukraine aid package.",
         published_at=now - timedelta(hours=1),
     )
     db.add(article1)
@@ -222,3 +222,41 @@ def test_both_unassigned_articles_group_together(db):
     assert article1_after.story_id is not None
     assert article2_after.story_id is not None
     assert article1_after.story_id == article2_after.story_id
+
+
+def test_same_publisher_different_events_must_stay_separate(db):
+    """Test that articles about same person but different events from same publisher stay separate."""
+    now = datetime.now(timezone.utc)
+
+    article1 = Article(
+        url="https://foxnews.com/article1",
+        url_norm="https://foxnews.com/article1",
+        publisher="Fox News",
+        title="LeBron James helicopter commute causes traffic delays",
+        summary_text="NBA star LeBron James' helicopter commute from Newport Beach to Los Angeles created unexpected traffic disruptions today.",
+        published_at=now - timedelta(hours=2),
+    )
+    article2 = Article(
+        url="https://foxnews.com/article2",
+        url_norm="https://foxnews.com/article2",
+        publisher="Fox News",
+        title="LeBron James responds to Carmelo Anthony comments about travel",
+        summary_text="LeBron James issued a statement addressing Carmelo Anthony's recent comments regarding his travel preferences and lifestyle choices.",
+        published_at=now - timedelta(hours=1),
+    )
+    db.add(article1)
+    db.add(article2)
+    db.commit()
+
+    assert article1.story_id is None
+    assert article2.story_id is None
+
+    group_articles(db)
+
+    article1_after = db.query(Article).filter(Article.id == article1.id).first()
+    article2_after = db.query(Article).filter(Article.id == article2.id).first()
+
+    assert article1_after.story_id is not None
+    assert article2_after.story_id is not None
+    assert article1_after.story_id != article2_after.story_id, "Different events about same person from same publisher should stay separate"
+
