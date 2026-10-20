@@ -162,17 +162,17 @@ def test_story_headline_updated_to_most_recent(db):
     now = datetime.now(timezone.utc)
 
     article1 = Article(
-        url="https://example.com/article1",
-        url_norm="https://example.com/article1",
-        publisher="Example",
+        url="https://foxnews.com/article1",
+        url_norm="https://foxnews.com/article1",
+        publisher="Fox News",
         title="Older Article Title",
         summary_text="Congress and Senate vote on Ukraine aid package with overwhelming bipartisan support. Both chambers strongly passed Ukraine military assistance legislation. Congress approved substantial Ukraine defense funding. Senate voted for Ukraine support package.",
         published_at=now - timedelta(hours=5),
     )
     article2 = Article(
-        url="https://example.com/article2",
-        url_norm="https://example.com/article2",
-        publisher="Example",
+        url="https://npr.com/article2",
+        url_norm="https://npr.com/article2",
+        publisher="NPR",
         title="Newer Article Title",
         summary_text="Congress and Senate pass Ukraine military aid bill with strong bipartisan support. Both chambers passed Ukraine defense assistance. Congress approved substantial Ukraine military funding. Senate voted to support Ukraine aid package.",
         published_at=now - timedelta(hours=1),

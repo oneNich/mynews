@@ -5,7 +5,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from models import Article, Story
 import re
 
-SIMILARITY_THRESHOLD_SAME_PUBLISHER = 0.60
 SIMILARITY_THRESHOLD_CROSS_PUBLISHER = 0.40
 TIME_WINDOW_HOURS = 168
 
@@ -23,7 +22,9 @@ def get_shared_capitalized_terms(text1, text2):
     return terms1 & terms2
 
 def find_best_matching_article(article, db: Session):
-    """Find the best-matching article from the last 7 days for grouping."""
+    """Find the best-matching article from different publishers only (cross-publisher only rule).
+    An article may only join a story when its best match is from a DIFFERENT publisher.
+    Same-publisher matches never cause a join."""
     if not article.published_at:
         return None
 
@@ -31,6 +32,7 @@ def find_best_matching_article(article, db: Session):
     candidates = db.query(Article).filter(
         Article.id != article.id,
         Article.published_at >= cutoff,
+        Article.publisher != article.publisher,
     ).all()
 
     if not candidates:
@@ -50,9 +52,7 @@ def find_best_matching_article(article, db: Session):
         best_score = similarities[best_idx]
         best_candidate = candidates[best_idx]
 
-        threshold = SIMILARITY_THRESHOLD_SAME_PUBLISHER if article.publisher == best_candidate.publisher else SIMILARITY_THRESHOLD_CROSS_PUBLISHER
-
-        if best_score >= threshold:
+        if best_score >= SIMILARITY_THRESHOLD_CROSS_PUBLISHER:
             time_diff = abs((article.published_at - best_candidate.published_at).total_seconds() / 3600)
             if time_diff <= TIME_WINDOW_HOURS:
                 shared_terms = get_shared_capitalized_terms(article_text,
