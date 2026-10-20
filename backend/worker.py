@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from db import SessionLocal, engine
 from models import Base, JobRun
 from ingest import ingest
+from grouping import group_articles
 from retention import run_retention
 
 
@@ -17,6 +18,7 @@ def main(trigger="manual"):
 
     try:
         stats = ingest(db)
+        grouping_stats = group_articles(db)
         articles_expired = run_retention(db)
 
         job.status = "ok" if not stats["errors"] else "partial"
@@ -30,7 +32,7 @@ def main(trigger="manual"):
         job.finished_at = datetime.now(timezone.utc)
         db.commit()
 
-        print(f"[{job.status.upper()}] Fetched: {job.articles_fetched}, New: {job.articles_new}, Expired: {job.articles_expired}, Errors: {len(stats['errors'])}")
+        print(f"[{job.status.upper()}] Fetched: {job.articles_fetched}, New: {job.articles_new}, Expired: {job.articles_expired}, Stories Created: {grouping_stats['stories_created']}, Stories Joined: {grouping_stats['stories_joined']}, Errors: {len(stats['errors'])}")
 
     except Exception as e:
         job.status = "failed"

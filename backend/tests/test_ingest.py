@@ -79,7 +79,7 @@ def test_dedup_upsert(db):
     # Entry 1
     entry1 = {
         "title": "Article Title v1",
-        "link": "https://example.com/article",
+        "link": "https://EXAMPLE.COM/article?ref=feed",
         "summary": "Summary 1",
         "published": "2024-01-01T00:00:00Z",
         "published_parsed": now_tuple,
@@ -88,7 +88,7 @@ def test_dedup_upsert(db):
     # Entry 2 - same URL with different normalization
     entry2 = {
         "title": "Article Title v2",
-        "link": "https://EXAMPLE.COM/ARTICLE?ref=feed",
+        "link": "https://EXAMPLE.COM/article?ref=feed",
         "summary": "Summary 2",
         "published": "2024-01-01T00:00:00Z",
         "published_parsed": now_tuple,

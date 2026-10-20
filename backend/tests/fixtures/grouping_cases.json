@@ -1,0 +1,81 @@
+{
+  "_note": "FIXTURE test data for story grouping tests",
+  "cases": [
+    {
+      "name": "Same event, different publishers - must group",
+      "description": "Ukraine aid vote covered by Fox News and NPR within 24 hours",
+      "articles": [
+        {
+          "publisher": "Fox News",
+          "title": "Congress votes on Ukraine aid package today",
+          "summary_text": "Congress passed a comprehensive aid package for Ukraine with bipartisan support. House and Senate voted to approve $61 billion in military assistance for Ukraine.",
+          "hours_ago": 2
+        },
+        {
+          "publisher": "NPR",
+          "title": "Congress approves Ukraine military assistance bill",
+          "summary_text": "In a major vote, both the House and Senate passed a funding bill supporting Ukraine's defense against Russian forces. Congress allocated $61 billion to Ukraine.",
+          "hours_ago": 4
+        }
+      ],
+      "should_group": true
+    },
+    {
+      "name": "Biden speech at different locations, different days - must stay separate",
+      "description": "President Biden speaks in New York and then in Texas a week apart",
+      "articles": [
+        {
+          "publisher": "BBC World",
+          "title": "Biden addresses crowd in New York",
+          "summary_text": "President Joe Biden gave a speech at a rally in New York, discussing economic policy and infrastructure initiatives.",
+          "hours_ago": 120
+        },
+        {
+          "publisher": "Fox News",
+          "title": "Biden holds campaign event in Texas",
+          "summary_text": "The President visited Texas for a political gathering, speaking about healthcare and border security measures.",
+          "hours_ago": 48
+        }
+      ],
+      "should_group": false
+    },
+    {
+      "name": "Same event, different publishers - must group",
+      "description": "Tesla factory expansion announced by CNBC and Reuters within 12 hours",
+      "articles": [
+        {
+          "publisher": "NPR",
+          "title": "Tesla announces new Gigafactory in Mexico",
+          "summary_text": "Tesla Inc. has announced plans to build a new Gigafactory in Mexico, creating thousands of jobs. Elon Musk said Tesla will expand production capacity in Mexico significantly.",
+          "hours_ago": 1
+        },
+        {
+          "publisher": "BBC World",
+          "title": "Elon Musk Tesla Mexico factory expansion",
+          "summary_text": "Tesla and Elon Musk have unveiled a major Gigafactory expansion in Mexico to increase vehicle production. The Mexico facility will boost Tesla's output.",
+          "hours_ago": 8
+        }
+      ],
+      "should_group": true
+    },
+    {
+      "name": "Apple product mentions with same person but different stories - must stay separate",
+      "description": "Steve Jobs biography anniversary vs Apple earnings call",
+      "articles": [
+        {
+          "publisher": "Fox News",
+          "title": "Steve Jobs biography celebrates 10 year anniversary",
+          "summary_text": "The acclaimed biography of Apple founder Steve Jobs is marking its 10th anniversary since publication, with new insights into his life and vision.",
+          "hours_ago": 72
+        },
+        {
+          "publisher": "NPR",
+          "title": "Apple reports record Q4 earnings",
+          "summary_text": "Apple Inc. announced exceptional quarterly earnings results, driven by strong iPhone and services sales worldwide.",
+          "hours_ago": 36
+        }
+      ],
+      "should_group": false
+    }
+  ]
+}
