@@ -84,8 +84,74 @@ class _StoryListScreenState extends State<StoryListScreen> {
                 );
               }
 
-              // Error state
+              // Error state or offline cache
               if (storiesSnapshot.hasError) {
+                final error = storiesSnapshot.error;
+                if (error is ApiException && error.cachedData != null) {
+                  final cachedData = error.cachedData as StoriesResponse;
+                  final cacheTime = error.cacheTime;
+                  final formattedCacheTime = cacheTime != null
+                      ? DateFormat('MMM d, yyyy h:mm a').format(cacheTime)
+                      : 'Unknown time';
+
+                  return Stack(
+                    children: [
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...cachedData.stories.map((story) => _buildStoryCard(context, story)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          color: Colors.orange[100],
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Offline - showing data from $formattedCacheTime',
+                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Publisher and background links need a connection',
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: _onRefresh,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

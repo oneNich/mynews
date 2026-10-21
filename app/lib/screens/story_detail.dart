@@ -112,6 +112,109 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
           }
 
           if (snapshot.hasError) {
+            final error = snapshot.error;
+            if (error is ApiException && error.cachedData != null) {
+              final story = error.cachedData as StoryDetail;
+              final cacheTime = error.cacheTime;
+              final formattedCacheTime = cacheTime != null
+                  ? DateFormat('MMM d, yyyy h:mm a').format(cacheTime)
+                  : 'Unknown time';
+              final formattedTime = DateFormat('MMM d, yyyy h:mm a').format(story.updatedAt);
+
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            story.headline,
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Updated $formattedTime',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 24),
+                          if (story.summary != null) ...[
+                            Text(
+                              'Story overview',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildSummarySection(context, story.summary!),
+                            const SizedBox(height: 24),
+                          ],
+                          Text(
+                            'Original coverage',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildOriginalCoverageSection(context, story.publishers),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Background',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildBackgroundSection(context, story.backgroundLinks),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.orange[100],
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Offline - showing data from $formattedCacheTime',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Publisher and background links need a connection',
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _storyFuture = _apiClient.getStory(widget.storyId);
+                                  });
+                                },
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
