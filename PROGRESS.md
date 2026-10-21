@@ -1,6 +1,6 @@
 # Progress
 ## Current step
-Next step TBD
+Complete
 ## Done
 - P1 Spec file (tag p1-done)
 - P5 Retention and cleanup (tag p5-done)
@@ -13,6 +13,8 @@ Next step TBD
 - P10 Flutter app skeleton and story list (tag p10-done)
 - P11 Story detail screen (tag p11-done)
 - P12 AI analysis and perspective screens (tag p12-done)
+- P13 Offline cache and release build (tag p13-done)
+- P14 Documentation (tag p14-done)
 ## Decisions made
 - Articles and stories are filtered by published_at >= now - 168h in API queries
 - Retention runs at the end of every worker.py run and deletes expired articles, orphaned stories, and their related records
@@ -28,6 +30,7 @@ Next step TBD
 - **Final API (P9)**: Three read-only endpoints implemented with FastAPI; GET /status returns last successful run time, last run status, and last 5 job runs; GET /stories returns list of stories sorted newest first with id, headline, latest_article_at, publisher_count, article_count, summary_status; GET /stories/{id} returns full story details with publishers grouped by name and their articles, background links, and AI summary; all timestamps as ISO 8601 UTC; expired articles (older than 168h) never appear; pending/failed summaries return status only with null text fields; 404 with JSON message for unknown/expired stories; no filtering/fetching of external data from API endpoints
 - **P11 Story detail screen**: Separate file app/lib/screens/story_detail.dart; displays headline and updated_at time; 'Story overview' section shows AI summary with status handling (pending, failed, or ok with label); 'Original coverage' section with buttons per publisher (1 article opens URL in browser, multiple articles show bottom sheet); 'Background' section shows buttons per link or "No background resource available"; 'AI analysis' button shows SnackBar "Coming soon"; url_launcher with externalApplication mode; error handling for link failures shows SnackBar; added https VIEW intent to AndroidManifest.xml <queries>; all buttons have 48dp+ tap targets; screen scrolls to prevent clipping
 - **P12 AI analysis and perspective screens**: Two new files - app/lib/screens/ai_analysis.dart and app/lib/screens/perspective.dart; AI analysis screen displays header chip with 'AI-generated | Updated <time>', sections for Overview, Agreement and uncertainty; perspective buttons (or "Insufficient evidence" message if insufficient_evidence=true); supporting articles numbered [1], [2]... with publisher name and title; each article has Open button using url_launcher; footer with "Input scope" text; handles pending/failed status with clear messaging and "Back to original coverage" button; perspective screen shows perspective name in header chip, perspective summary in tinted card (different from article titles), supporting coverage with cited articles numbered [n], other perspectives as buttons with pushReplacement for navigation; all text passed from already-loaded StoryDetail data (no new network calls); AI text styled as body text in Cards, article titles as bold; both screens scroll properly; error handling for URL opens shows SnackBar
+- **P13 Offline cache and release build**: Part A - offline caching in api.dart, story_list.dart, story_detail.dart; shared_preferences used to cache JSON after successful GET /stories and GET /stories/{id} along with sync timestamp; cache filtered to hide stories older than 168 hours even when offline; when request fails, checks for cached data and throws ApiException with cachedData and cacheTime properties; story_list.dart and story_detail.dart check ApiException for cached data and display banner "Offline - showing data from <sync_time in readable local time>" with Retry button and note "Publisher and background links need a connection"; if no cache and no connection, shows normal error state; Part B - release polish: version already set to 1.0.0+1 in pubspec.yaml; changed android:label from "my_news" to "My News" in AndroidManifest.xml; checked all screens for endless spinners - all loading states end in data, cached data, or error with Retry; release build successful (app-release.apk 47MB)
 ## Known issues
 - "Test" publisher articles only used in test data (in-memory databases), no production risk, but regroup.py deletes any if they exist
   - Found in backend/tests/test_ingest.py:132,143 and backend/tests/test_retention.py:30,37,67,107,148,156,196,220 (all test functions with in-memory SQLite)
@@ -36,4 +39,5 @@ Next step TBD
 - Flutter test infrastructure has a known bug in version 3.47.5 (test_core package) that prevents `flutter test` from running in some environments. This is not a code issue - `flutter analyze` validates that all code is correct and follows Dart/Flutter best practices
 ## Deployed URLs
 - API: https://mynews-fdgy.onrender.com/
+
 
