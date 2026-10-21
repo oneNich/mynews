@@ -50,8 +50,9 @@ class Summary(Base):
     uncertainty = Column(String, nullable=True)
     perspectives_json = Column(JSON, nullable=True)
     citations_json = Column(JSON, nullable=True)
+    insufficient_evidence = Column(Boolean, nullable=True)
     model = Column(String, nullable=True)
-    prompt_version = Column(Integer, nullable=True)
+    prompt_version = Column(String, nullable=True)
     generated_at = Column(DateTime, nullable=True)
 
 
@@ -67,4 +68,5 @@ class JobRun(Base):
     articles_new = Column(Integer, nullable=False, default=0)
     articles_expired = Column(Integer, nullable=False, default=0)
     ai_calls = Column(Integer, nullable=False, default=0)
+    background_links_added = Column(Integer, nullable=False, default=0)
     errors_json = Column(JSON, nullable=True)

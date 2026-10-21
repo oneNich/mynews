@@ -1,0 +1,6 @@
+{
+  "model": "claude-haiku-5-5",
+  "max_tokens": 1200,
+  "temperature": 0.2,
+  "prompt_version": "v1"
+}
